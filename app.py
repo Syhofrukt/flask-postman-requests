@@ -1,14 +1,14 @@
 from flask import Flask, request, jsonify
-from userscript import user_crud
+from userscript import UserCrud
 
 app = Flask(__name__)
 
-crud = user_crud("data.json")
+crud = UserCrud("data.json")
 
 
 @app.route("/", methods=["POST"])
 def register():
-    crud.write_to_file(request.get_json())
+    crud.update_data(request.get_json())
     return jsonify({"info": "done!"})
 
 
@@ -22,9 +22,9 @@ def validation():
 
 
 @app.route("/")
-def read_logins():
+def check_logins():
     crud.check_all_logins()
-    return jsonify({"logins": crud.logins})
+    return jsonify(logins=crud.check_all_logins())
 
 
 @app.route("/", methods=["PUT"])
@@ -44,9 +44,11 @@ def account_delete():
     if crud.check_data == 0:
         return jsonify({"info": "Done! Your account has been deleted"})
     if crud.check_data is None:
-        return jsonify({"error": "Account information is incorrect"})
+        return jsonify(
+            error='Account information is incorrect. Try using {"login": ["password", "Yes or No"]}'
+        )
     if crud.check_data == 1:
-        return jsonify({"info": "Request was canceled by user"})
+        return jsonify({"error": "Request was canceled by user"})
 
 
 app.run(debug=True)
